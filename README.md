@@ -1,18 +1,30 @@
 # MongoDB + Mongo-Express Kubernetes Deployments
 
-This README documents the Kubernetes deployment and service manifests for a MongoDB instance and a Mongo Express web UI located in this folder. It uses only the `mongo-depl.yaml` (MongoDB) and `mongo-express.yaml` (Mongo Express) manifests.
+"⚠️ Security Warning: These manifests contain plain-text credentials for demonstration purposes; never commit unencrypted secrets to a production repository—in a real-world workflow, use Sealed Secrets or the External Secrets Operator."
+
+This documentation provides the optimized workflow for deploying MongoDB and Mongo Express on a Minikube cluster using the Docker driver.
+Environment Criteria:
+Cluster: Minikube (v1.33+)
+Driver: Docker
+OS: macOS / Linux / Windows
 
 **Files used:**
-- `mongo-depl.yaml` — MongoDB Deployment, Secret, and Service
-- `mongo-express.yaml` — Mongo Express Secret, ConfigMap, Deployment, and NodePort Service
+- `mongo-depl-serv-secret.yaml` — MongoDB Deployment, Secret, and Service
+- `mongo-express-all-components.yaml` — Mongo Express Secret, ConfigMap, Deployment, and NodePort Service
 
 ## Overview
 - MongoDB runs as a single-replica `Deployment` exposing port `27017` via a `Service` named `mongodb-service`.
 - Mongo Express runs as a single-replica `Deployment` exposing port `8081` via a `NodePort` (nodePort `30081`) and connects to `mongodb-service`.
 
 ## Prerequisites
-- A Kubernetes cluster and `kubectl` configured to access it.
+- A Kubernetes cluster and `kubectl` configured to access it. I suggest Minikube.
 - (Optional) `jq`, `curl` or other CLI tools to inspect resources.
+
+## Start Cluster
+Ensure Minikube is running with the Docker driver to handle internal DNS and Service routing correctly:
+```bash
+minikube start --driver=docker
+```
 
 ## Deploy
 Apply the MongoDB manifest first, then the Mongo Express manifest:
@@ -43,10 +55,21 @@ kubectl logs -l app=mongo-depl
 - Access the web UI at `http://<node-ip>:30081` (replace `<node-ip>` with your cluster node's IP or use a port-forward):
 
 ```bash
-# Option A: Node IP + NodePort
+# Option A: Minikube critical (recommended)
+# This command creates a temporary tunnel and opens your browser to the correct IP:
+minikube service mongo-express-service
+
+# Option B: Get the Minikube IP
+minikube ip
+# Get the assigned NodePort
+kubectl get svc mongo-express-service
+# Access at http://<minikube-ip>:30081
+
+
+# Option C: Node IP + NodePort
 # http://<node-ip>:30081
 
-# Option B: port-forward (local):
+# Option D: port-forward (local):
 kubectl port-forward deployment/mongo-express 8081:8081
 # then open http://localhost:8081
 ```
@@ -55,7 +78,7 @@ kubectl port-forward deployment/mongo-express 8081:8081
 
 MongoDB root credentials are stored in a Kubernetes `Secret` named `mongodb-secret` and injected into the `mongo` container as `MONGO_INITDB_ROOT_USERNAME` and `MONGO_INITDB_ROOT_PASSWORD`.
 
-Mongo Express basic auth and server config come from a `Secret` (`mongo-express-secret`) and a `ConfigMap` (`mongodb-basics`). Values in these resources are base64-encoded in the YAMLs.
+Mongo Express basic auth come from a `Secret` (`mongo-express-secret`) and non-sensitive logic come from a `ConfigMap` (`mongodb-basics`). Values in these resources are base64-encoded in the YAMLs.
 
 To decode a base64 value from the YAML (example):
 
