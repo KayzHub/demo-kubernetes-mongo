@@ -1,0 +1,77 @@
+
+apiVersion: v1
+data:
+  ME_CONFIG_BASICAUTH_PASSWORD: cGFzc2Vy
+  ME_CONFIG_BASICAUTH_USERNAME: dXNlcg==
+kind: Secret
+metadata:
+  name: mongo-express-secret
+
+---
+
+apiVersion: v1
+data:
+  ME_CONFIG_BASICAUTH_ENABLED: "true"
+  ME_CONFIG_MONGODB_SERVER: mongodb-service
+kind: ConfigMap
+metadata:
+  name: mongodb-basics
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: mongo-express
+  name: mongo-express
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongo-express
+  template:
+    metadata:
+      labels:
+        app: mongo-express
+    spec:
+      containers:
+      - image: mongo-express
+        name: mongo-express
+        ports:
+        - containerPort: 8081
+        envFrom:
+        - secretRef:
+              name: mongo-express-secret
+        - configMapRef:
+            name: mongodb-basics
+        env:
+        - name: ME_CONFIG_MONGODB_ADMINUSERNAME
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-secret
+              key: MONGO_INITDB_ROOT_USERNAME
+        - name: ME_CONFIG_MONGODB_ADMINPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-secret
+              key: MONGO_INITDB_ROOT_PASSWORD
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: mongo-express
+  name: mongo-express-service
+spec:
+  ports:
+  - port: 8081
+    protocol: TCP
+    targetPort: 8081
+    nodePort: 30081
+  selector:
+    app: mongo-express
+  type: NodePort
+
