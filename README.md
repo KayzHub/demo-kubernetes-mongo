@@ -1,6 +1,6 @@
 # MongoDB + Mongo-Express Kubernetes Deployments
 
-"⚠️ Security Warning: These manifests contain plain-text credentials for demonstration purposes; never commit unencrypted secrets to a production repository—in a real-world workflow, use Sealed Secrets or the External Secrets Operator."
+⚠️ Security Warning: These manifests contain plain-text credentials for demonstration purposes; never commit unencrypted secrets to a production repository—in a real-world workflow, use Sealed Secrets or the External Secrets Operator.
 
 This documentation provides the optimized workflow for deploying MongoDB and Mongo Express on a Minikube cluster using the Docker driver.
 Environment Criteria:
