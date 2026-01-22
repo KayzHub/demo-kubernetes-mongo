@@ -9,8 +9,8 @@ Driver: Docker
 OS: macOS / Linux / Windows
 
 **Files used:**
-- `mongo-depl-serv-secret.yaml` — MongoDB Deployment, Secret, and Service
-- `mongo-express-all-components.yaml` — Mongo Express Secret, ConfigMap, Deployment, and NodePort Service
+- `mongo-depl.yaml` — MongoDB Deployment, Secret, and Service
+- `mongo-express.yaml` — Mongo Express Secret, ConfigMap, Deployment, and NodePort Service
 
 ## Overview
 - MongoDB runs as a single-replica `Deployment` exposing port `27017` via a `Service` named `mongodb-service`.
@@ -73,6 +73,9 @@ kubectl get svc mongo-express-service
 kubectl port-forward deployment/mongo-express 8081:8081
 # then open http://localhost:8081
 ```
+## Mongo-Express UI authentication
+Per secrets configured for mongo-express, make sure to use `user` as username and  `passer` as password when you get into the UI. You should see the following screen after you authenticate:
+<img width="2612" height="900" alt="image" src="https://github.com/user-attachments/assets/d3853458-6fcb-4476-8e4b-fb3cda4f0bfd" />
 
 ## Environment variables and Secrets
 
